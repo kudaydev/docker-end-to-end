@@ -1,29 +1,32 @@
-name: Terraform AWS EC2 Deployment
+name: Terraform AWS Deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   terraform:
-    name: Terraform Apply
+    name: Terraform in day1 directory
     runs-on: ubuntu-latest
 
-    env:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.6
+          terraform_version: 1.6.0
 
-      - name: Initialize Terraform
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # update to your AWS region
+
+      - name: Terraform Init
         working-directory: ./day1
         run: terraform init
 
@@ -33,14 +36,9 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ./day1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: terraform plan
+        run: terraform plan -var-file="terraform.tfvars"
 
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
         working-directory: ./day1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
