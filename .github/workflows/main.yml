@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # 👈 Allows manual trigger for destroy
+  workflow_dispatch:  # Allow manual trigger for destroy
 
 jobs:
-  terraform:
-    name: Terraform in day1 directory
+  deploy:
+    name: Deploy Terraform
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +26,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # update to your AWS region
+          aws-region: us-east-1
 
       - name: Terraform Init
         working-directory: ./day1
@@ -40,9 +41,9 @@ jobs:
         run: terraform plan -var-file="terraform.tfvars"
 
       # - name: Terraform Apply
-      #   if: github.ref == 'refs/heads/main'
       #   working-directory: ./day1
       #   run: terraform apply -auto-approve -var-file="terraform.tfvars"
+
   destroy:
     name: Destroy Terraform
     runs-on: ubuntu-latest
