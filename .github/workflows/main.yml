@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allow manual trigger for destroy
 
 jobs:
-  deploy:
-    name: Deploy Terraform
-    if: github.event_name == 'push'
+  terraform:
+    name: Terraform in day1 directory
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +24,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-east-1  # update to your AWS region
 
       - name: Terraform Init
         working-directory: ./day1
@@ -40,38 +38,7 @@ jobs:
         working-directory: ./day1
         run: terraform plan -var-file="terraform.tfvars"
 
-      # - name: Terraform Apply
-      #   working-directory: ./day1
-      #   run: terraform apply -auto-approve -var-file="terraform.tfvars"
-
-  destroy:
-    name: Destroy Terraform
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' }}  # <- ensure syntax is correct
-
-    steps:
-      - name: Echo event name
-        run: echo "Triggered by: ${{ github.event_name }}"
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.0
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Terraform Init
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
         working-directory: ./day1
-        run: terraform init
-
-      - name: Terraform Destroy
-        working-directory: ./day1
-        run: terraform destroy -auto-approve -var-file="terraform.tfvars"
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
