@@ -7,7 +7,7 @@ resource "aws_instance" "my_app" {
   subnet_id                   = aws_subnet.my_app.id
   key_name                    = aws_key_pair.key_pair.key_name
   tags = {
-    Name = "Docker"
+    Name = "Docker-Lab"
   }
 }
 
