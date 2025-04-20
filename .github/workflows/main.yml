@@ -43,6 +43,6 @@ jobs:
       #   working-directory: ./day1
       #   run: terraform apply -auto-approve -var-file="terraform.tfvars"
       - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/main'
         working-directory: ./day1
         run: terraform destroy -auto-approve -var-file="terraform.tfvars"
